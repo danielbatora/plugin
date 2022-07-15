@@ -1,0 +1,28 @@
+name: plugin
+display_name: plugin
+contributions:
+  commands:
+    - id: plugin.get_reader
+      python_name: plugin._reader:napari_get_reader
+      title: Open data with plugin
+    - id: plugin.make_qwidget
+      python_name: plugin._widget:ExampleQWidget
+      title: Make example QWidget
+    - id: plugin.make_magic_widget
+      python_name: plugin._widget:example_magic_widget
+      title: Make example magic widget
+    - id: plugin.make_func_widget
+      python_name: plugin._widget:example_function_widget
+      title: Make example function widget
+  readers:
+    - command: plugin.get_reader
+      accepts_directories: false
+      filename_patterns: ['*.npy']
+  widgets:
+    - command: plugin.make_qwidget
+      display_name: Example QWidget
+    - command: plugin.make_magic_widget
+      display_name: Example Magic Widget
+    - command: plugin.make_func_widget
+      autogenerate: true
+      display_name: Example Function Widget
