@@ -12,7 +12,7 @@ from magicgui import magic_factory
 from qtpy.QtWidgets import QHBoxLayout, QPushButton, QWidget
 from skimage.draw import polygon2mask
 import napari
-from imagetools.util import calculate_lag
+from imagetools.util import calculate_lag, calculate_bounding_rectangle, calculate_props, calculate_rate, fit_dim, generate_polygon_mask, crop_with_polygon_mask
 import numpy as np 
 import scipy
 import os 
@@ -76,13 +76,66 @@ def register_images(reference: "napari.layers.Image", target_image:"napari.layer
             
             #np.save(os.path.join(folder, "ref"), ref)
             #np.save(os.path.join(folder, "target"), target)
-        print(lags)
         mean_lag = np.mean(np.array(lags), axis = 0).astype(int)
 
-        corrected_target = scipy.ndimage.shift(target_image.data, -mean_lag)
+        corrected_target = scipy.ndimage.shift(target_image.data, -mean_lag, mode ="constant")
 
         viewer.add_image(corrected_target, name="shifted_target")
 
     else: 
         print(type(reference), type(target_image), type(roi))
         print("Images or shapes are loaded incorrectly")
+
+
+
+
+@magic_factory(call_button ="Calculate")
+def shapes2labels(shapes: "napari.layers.Shapes", viewer :"napari.viewer.Viewer"):
+
+    types = np.array([type(x) for x in viewer.layers])
+    img_ind = np.argwhere(types == napari.layers.image.image.Image)
+    if img_ind.shape[0]:
+        img_shape = viewer.layers[img_ind[0][0]].data.shape
+        if shapes is not None and shapes.data: 
+            labels = shapes.to_labels(img_shape)
+            viewer.add_labels(labels, name=f"labelsfrom{shapes.name}")
+
+
+
+
+
+@magic_factory(call_button ="Calculate")
+def calculate_target_rate(reference: "napari.layers.Labels", target:"napari.layers.Image", shapes: "napari.layers.Shapes", viewer :"napari.viewer.Viewer", coloc_thr = 0.2):
+
+
+
+    ref_data = reference.data
+    target_data = target.data
+
+
+    print(shapes)
+    if shapes is not None and shapes.data: 
+
+        for polygon in shapes.data: 
+            
+        #Crop polygon coordinates not to exceed image dimensions
+            polygon_fit = fit_dim(polygon, ref_data.shape)
+
+        #get closest rectange
+            rectangle = calculate_bounding_rectangle(polygon_fit)
+            crop_x = np.unique(np.array([i[0] for i in rectangle]))
+            crop_y = np.unique(np.array([i[1] for i in rectangle]))
+        #work with cropped image
+            ref = ref_data[crop_x.min(): crop_x.max(), crop_y.min(): crop_y.max()]
+            target = target_data[crop_x.min(): crop_x.max(), crop_y.min(): crop_y.max()]
+
+        #remove additional labels that are not in the polygon
+            poly_mask = generate_polygon_mask(ref, rectangle, polygon_fit)
+
+            ref_poly_only = crop_with_polygon_mask(ref, poly_mask)
+            target_poly_only = crop_with_polygon_mask(target, poly_mask)
+        #calculate rate for each region 
+
+    else: 
+        rate = calculate_rate(ref_data, target_data, coloc_thr)
+        print(rate)

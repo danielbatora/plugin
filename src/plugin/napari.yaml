@@ -8,6 +8,15 @@ contributions:
     - id: plugin.offset
       python_name: plugin._widget:register_images
       title: Register Images
+    - id: plugin.contrast
+      python_name: plugin._widget:adjust_contrast
+      title: Register Images
+    - id: plugin.calc_target_rate
+      python_name: plugin._widget:calculate_target_rate
+      title: Register Images
+    - id: plugin.convert_shapes_to_labels
+      python_name: plugin._widget:shapes2labels
+      title: Shapes2Labels
   readers:
     - command: plugin.get_reader
       accepts_directories: false
@@ -15,3 +24,9 @@ contributions:
   widgets:
    - command: plugin.offset
      display_name: Register Images
+   - command: plugin.contrast
+     display_name: Adjust Contrast   
+   - command: plugin.calc_target_rate
+     display_name: Calculate Target Rate
+   - command: plugin.convert_shapes_to_labels
+     display_name: Shapes2Labels
