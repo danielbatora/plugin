@@ -16,6 +16,9 @@ from imagetools.util import calculate_lag, calculate_bounding_rectangle, calcula
 import numpy as np 
 import scipy
 import os 
+import pandas as pd 
+
+
 
 if TYPE_CHECKING:
     import napari
@@ -24,7 +27,8 @@ if TYPE_CHECKING:
 
 
 
-folder = "python_course/brain/folder_1"
+folder = os.getcwd()
+
 
 
 class ExampleQWidget(QWidget):
@@ -105,17 +109,17 @@ def shapes2labels(shapes: "napari.layers.Shapes", viewer :"napari.viewer.Viewer"
 
 
 @magic_factory(call_button ="Calculate")
-def calculate_target_rate(reference: "napari.layers.Labels", target:"napari.layers.Image", shapes: "napari.layers.Shapes", viewer :"napari.viewer.Viewer", coloc_thr = 0.2):
+def calculate_target_rate(reference: "napari.layers.Labels", target:"napari.layers.Image", shapes: "napari.layers.Shapes", viewer :"napari.viewer.Viewer",save:str,  coloc_thr = 0.2):
 
 
 
     ref_data = reference.data
     target_data = target.data
 
-
-    print(shapes)
+    rates = {"rate": []}
+    inds = []
     if shapes is not None and shapes.data: 
-
+        counter = 0
         for polygon in shapes.data: 
             
         #Crop polygon coordinates not to exceed image dimensions
@@ -134,8 +138,23 @@ def calculate_target_rate(reference: "napari.layers.Labels", target:"napari.laye
 
             ref_poly_only = crop_with_polygon_mask(ref, poly_mask)
             target_poly_only = crop_with_polygon_mask(target, poly_mask)
+
+        
+
         #calculate rate for each region 
+            rate = calculate_rate(ref_poly_only, target_poly_only, coloc_thr)
+            print(f"Target ratio for {counter} polygon is: {rate}")
+            inds.append(f"{shapes.name}_{counter}")
+            rates["rate"].append(rate)
+            counter += 1
+
+        df = pd.DataFrame(rates)
+        df.to_csv(os.path.join(folder, save + ".csv"), index = inds)
+
 
     else: 
         rate = calculate_rate(ref_data, target_data, coloc_thr)
-        print(rate)
+        rates.update({"rate", [rate]})
+        inds = shapes.name
+        df = pd.DataFrame(rates)
+        df.to_csv(os.path.join(folder, save + ".csv"), index = inds )
