@@ -17,10 +17,25 @@ contributions:
     - id: plugin.convert_shapes_to_labels
       python_name: plugin._widget:shapes2labels
       title: Shapes2Labels
+    - id: plugin.contours
+      python_name: plugin._widget:draw_contours
+      title: Shapes2Labels
+    - id: plugin.target_intensity
+      python_name: plugin._widget:calculate_target_intensity
+      title: Calculate Target Intensity
+    - id: plugin.slider
+      python_name: plugin._widget:ExampleQWidget
+      title: Slider
+    - id: plugin.segmentation
+      python_name: plugin._widget:stardist_segmentation
+      title: Slider
+    - id: plugin.antibody_intensity
+      python_name: plugin._widget:calculate_antibody_intensity
+      title: Antibody intensity
   readers:
     - command: plugin.get_reader
       accepts_directories: false
-      filename_patterns: ['*.npy']
+      filename_patterns: ['*.npy', "*nd2"]
   widgets:
    - command: plugin.offset
      display_name: Register Images
@@ -30,3 +45,13 @@ contributions:
      display_name: Calculate Target Rate
    - command: plugin.convert_shapes_to_labels
      display_name: Shapes2Labels
+   - command: plugin.contours
+     display_name: Draw Contours
+   - command: plugin.target_intensity
+     display_name: Calculate Target Intensity
+   - command: plugin.slider
+     display_name: Slider
+   - command: plugin.segmentation
+     display_name: Stardist Segmentation
+   - command: plugin.antibody_intensity
+     display_name: Antibody Intensity

@@ -6,7 +6,7 @@ implement multiple readers or even other plugin contributions. see:
 https://napari.org/plugins/guides.html?#readers
 """
 import numpy as np
-
+import nd2
 
 def napari_get_reader(path):
     """A basic implementation of a Reader contribution.
@@ -29,11 +29,12 @@ def napari_get_reader(path):
         path = path[0]
 
     # if we know we cannot read the file, we immediately return None.
-    if not path.endswith(".npy"):
+    if  path.endswith(".npy"): 
+        return reader_function
+    elif path.endswith(".nd2"):
+        return reader_function_nd2
+    else: 
         return None
-
-    # otherwise we return the *function* that can read ``path``.
-    return reader_function
 
 
 def reader_function(path):
@@ -62,6 +63,19 @@ def reader_function(path):
     paths = [path] if isinstance(path, str) else path
     # load all files into array
     arrays = [np.load(_path) for _path in paths]
+    # stack arrays into single array
+    data = np.squeeze(np.stack(arrays))
+    # optional kwargs for the corresponding viewer.add_* method
+    add_kwargs = {}
+
+    layer_type = "image"  # optional, default is "image"
+    return [(data, add_kwargs, layer_type)]
+
+def reader_function_nd2(path): 
+  # handle both a string and a list of strings
+    paths = [path] if isinstance(path, str) else path
+    # load all files into array
+    arrays = [nd2.imread(_path).data for _path in paths]
     # stack arrays into single array
     data = np.squeeze(np.stack(arrays))
 
